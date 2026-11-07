@@ -1,430 +1,160 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#0b1118">
-  <title>Study Session — 90 / 10</title>
-  <style>
-    :root {
-      --ink: #f4f7f8;
-      --muted: #a6b2bc;
-      --line: rgba(225, 236, 242, .15);
-      --panel: rgba(10, 16, 23, .92);
-      --focus: #9fe0bf;
-      --break: #f0c27b;
-      --accent: var(--focus);
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: transparent !important;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    body { color: var(--ink); }
-    .overlay {
-      position: absolute;
-      top: clamp(10px, 2.5vh, 24px);
-      left: clamp(10px, 2.5vw, 24px);
-      width: min(370px, calc(100vw - 20px));
-      border: 1px solid var(--line);
-      border-radius: 17px;
-      padding: 14px 15px 12px;
-      background: var(--panel);
-      box-shadow: 0 8px 28px rgba(0,0,0,.22);
-      backdrop-filter: none;
-    }
-    .top, .main, .bottom, .controls, .right-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .top { gap: 12px; margin-bottom: 12px; }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #dce5e9;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .17em;
-      white-space: nowrap;
-    }
-    .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent);
-      flex: 0 0 auto;
-    }
-    .mode {
-      color: var(--accent);
-      border: 1px solid rgba(159,224,191,.34);
-      background: rgba(159,224,191,.09);
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: .13em;
-      white-space: nowrap;
-    }
-    .main { gap: 12px; align-items: flex-end; }
-    .time-label {
-      color: var(--muted);
-      font-size: 9px;
-      letter-spacing: .16em;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-    .time {
-      font-size: clamp(43px, 12vw, 56px);
-      line-height: .98;
-      font-weight: 650;
-      letter-spacing: -.055em;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
-    }
-    .side {
-      min-width: 88px;
-      text-align: right;
-      padding-bottom: 4px;
-    }
-    .count {
-      font-size: 22px;
-      line-height: 1;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
-    }
-    .count small {
-      font-size: 11px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .count-label {
-      margin-top: 5px;
-      font-size: 8px;
-      color: var(--muted);
-      letter-spacing: .16em;
-      font-weight: 700;
-    }
-    .next {
-      margin-top: 9px;
-      font-size: 9px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .track {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 4px;
-      margin: 14px 0 9px;
-    }
-    .segment {
-      height: 4px;
-      border-radius: 99px;
-      background: rgba(232,240,244,.16);
-    }
-    .segment.done { background: var(--focus); }
-    .segment.current { background: var(--accent); opacity: .9; }
-    .bottom {
-      gap: 8px;
-      color: var(--muted);
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-    .bottom span:last-child { text-align: right; }
-    .controls {
-      gap: 6px;
-      margin-top: 12px;
-      justify-content: flex-start;
-      flex-wrap: wrap;
-    }
-    button {
-      appearance: none;
-      border: 1px solid rgba(225,236,242,.18);
-      border-radius: 9px;
-      background: rgba(238,245,248,.08);
-      color: var(--ink);
-      min-height: 30px;
-      padding: 0 10px;
-      font: inherit;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      touch-action: manipulation;
-    }
-    button.primary {
-      background: var(--accent);
-      color: #0b1513;
-      border-color: transparent;
-      min-width: 88px;
-    }
-    button:active { transform: scale(.98); }
-    .sound-state {
-      margin-left: auto;
-      color: var(--muted);
-      font-size: 8px;
-      letter-spacing: .08em;
-      white-space: nowrap;
-    }
-    .break { --accent: var(--break); }
-    .break .mode { border-color: rgba(240,194,123,.36); background: rgba(240,194,123,.10); }
-    .done { --accent: #a9c6f5; }
-    .done .mode { border-color: rgba(169,198,245,.36); background: rgba(169,198,245,.10); }
-    .done .time { color: #a9c6f5; }
-    .hint {
-      margin-top: 8px;
-      color: #8796a1;
-      font-size: 8px;
-      line-height: 1.35;
-    }
-    @media (max-width: 340px) {
-      .overlay { padding: 12px; }
-      .side { min-width: 72px; }
-      button { padding: 0 8px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b1118">
+<title>Study Session — Auto 90 / 10</title>
+<style>
+:root{--ink:#f4f7f8;--muted:#a6b2bc;--line:rgba(225,236,242,.15);--panel:rgba(10,16,23,.92);--focus:#9fe0bf;--break:#f0c27b;--accent:var(--focus)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+body{color:var(--ink)}
+.overlay{position:absolute;top:clamp(8px,2vh,20px);left:clamp(8px,2vw,20px);width:min(350px,calc(100vw - 16px));padding:13px 14px 11px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:0 7px 24px rgba(0,0,0,.2)}
+.top,.main,.bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top{margin-bottom:11px}.brand{display:flex;align-items:center;gap:7px;color:#dce5e9;font-size:9px;font-weight:800;letter-spacing:.16em}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.mode{padding:5px 8px;border-radius:99px;border:1px solid rgba(159,224,191,.34);background:rgba(159,224,191,.09);color:var(--accent);font-size:8px;font-weight:800;letter-spacing:.12em}
+.main{align-items:flex-end}.time-label{margin-bottom:3px;color:var(--muted);font-size:8px;letter-spacing:.15em;font-weight:700}.time{font-size:clamp(42px,11vw,54px);line-height:.98;font-weight:650;letter-spacing:-.055em;font-variant-numeric:tabular-nums}.side{min-width:78px;text-align:right;padding-bottom:3px}.count{font-size:21px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}.count small{font-size:10px;color:var(--muted)}.count-label{margin-top:5px;color:var(--muted);font-size:8px;letter-spacing:.14em;font-weight:700}.next{margin-top:8px;color:var(--muted);font-size:8px;white-space:nowrap}
+.track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:13px 0 8px}.segment{height:4px;border-radius:99px;background:rgba(232,240,244,.16)}.segment.done{background:var(--focus)}.segment.current{background:var(--accent)}
+.bottom{color:var(--muted);font-size:7px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.bottom span:last-child{text-align:right}.status{margin-top:9px;color:#8796a1;font-size:7px;line-height:1.35;letter-spacing:.08em}.break{--accent:var(--break)}.break .mode{border-color:rgba(240,194,123,.36);background:rgba(240,194,123,.10)}.done{--accent:#a9c6f5}.done .mode{border-color:rgba(169,198,245,.36);background:rgba(169,198,245,.10)}.done .time{color:#a9c6f5}
+@media(max-width:320px){.overlay{padding:11px}.side{min-width:68px}}
+</style>
 </head>
 <body>
-  <main class="overlay" id="overlay" aria-live="off">
-    <div class="top">
-      <div class="brand"><span class="dot"></span> STUDY SESSION</div>
-      <div class="mode" id="mode">FOCUS MODE</div>
+<main class="overlay" id="overlay" aria-live="off">
+  <div class="top">
+    <div class="brand"><span class="dot"></span> STUDY SESSION</div>
+    <div class="mode" id="mode">FOCUS MODE</div>
+  </div>
+  <div class="main">
+    <div>
+      <div class="time-label" id="timeLabel">TIME TO FOCUS</div>
+      <div class="time" id="time">90:00</div>
     </div>
-
-    <div class="main">
-      <div>
-        <div class="time-label" id="timeLabel">TIME TO FOCUS</div>
-        <div class="time" id="time">90:00</div>
-      </div>
-      <div class="side">
-        <div class="count"><span id="session">01</span><small> / 10</small></div>
-        <div class="count-label">SESSION</div>
-        <div class="next" id="next">Next: 10 min break</div>
-      </div>
+    <div class="side">
+      <div class="count"><span id="session">01</span><small> / 10</small></div>
+      <div class="count-label">SESSION</div>
+      <div class="next" id="next">Next: 10 min break</div>
     </div>
+  </div>
+  <div class="track" id="track" aria-label="Ten focus sessions progress">
+    <span class="segment current"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span>
+  </div>
+  <div class="bottom"><span id="completed">0 / 10 completed</span><span>90 MIN FOCUS · 10 MIN BREAK</span></div>
+  <div class="status" id="status">AUTO-STARTED ON PAGE LOAD · AUDIO CUES ATTEMPTED WHEN PHASE CHANGES</div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const FOCUS_MS = 90 * 60 * 1000;
+  const BREAK_MS = 10 * 60 * 1000;
+  const TOTAL = 10;
+  const $ = id => document.getElementById(id);
+  const overlay = $('overlay');
+  let phase = 'focus';
+  let session = 1;
+  let deadline = Date.now() + FOCUS_MS;
+  let audio = null;
+  let lastCue = '';
 
-    <div class="track" id="track" aria-label="Ten focus sessions progress">
-      <span class="segment current"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span><span class="segment"></span>
-    </div>
+  function format(ms) {
+    const sec = Math.max(0, Math.ceil(ms / 1000));
+    return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+  }
 
-    <div class="bottom">
-      <span id="completed">0 / 10 completed</span>
-      <span>90 MIN FOCUS · 10 MIN BREAK</span>
-    </div>
+  function setupAudio() {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return false;
+    try {
+      if (!audio) audio = new Ctx();
+      // Browsers may keep this suspended until a user gesture. We try, but cannot force-unlock it.
+      if (audio.state === 'suspended') audio.resume().catch(() => {});
+      return true;
+    } catch (_) { return false; }
+  }
 
-    <div class="controls">
-      <button class="primary" id="startPause" type="button">START</button>
-      <button id="reset" type="button">RESET</button>
-      <button id="soundToggle" type="button">SOUND ON</button>
-      <button id="testSound" type="button">TEST CUE</button>
-      <span class="sound-state" id="soundState">READY</span>
-    </div>
-    <div class="hint" id="hint">Tap START here to begin and unlock audio. Cues play when focus/break changes.</div>
-  </main>
+  function cue(kind) {
+    if (!setupAudio() || !audio || audio.state !== 'running') {
+      $('status').textContent = 'TIMER RUNNING · WEBPAGE AUDIO MAY BE BLOCKED BY PRISM';
+      return;
+    }
+    const notes = kind === 'break' ? [660, 830, 1046] : kind === 'focus' ? [880, 660] : [523, 659, 784, 988];
+    const now = audio.currentTime + 0.04;
+    notes.forEach((freq, i) => {
+      const start = now + i * 0.2;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.045, start + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.25);
+      osc.connect(gain); gain.connect(audio.destination);
+      osc.start(start); osc.stop(start + 0.27);
+    });
+  }
 
-  <script>
-    (() => {
-      'use strict';
-      const FOCUS_SECONDS = 90 * 60;
-      const BREAK_SECONDS = 10 * 60;
-      const TOTAL_SESSIONS = 10;
+  function render(now) {
+    const remaining = Math.max(0, deadline - now);
+    $('time').textContent = phase === 'done' ? 'DONE' : format(remaining);
+    $('session').textContent = String(Math.min(session, TOTAL)).padStart(2, '0');
+    overlay.classList.toggle('break', phase === 'break');
+    overlay.classList.toggle('done', phase === 'done');
+    if (phase === 'focus') {
+      $('mode').textContent = 'FOCUS MODE'; $('timeLabel').textContent = 'TIME TO FOCUS'; $('next').textContent = 'Next: 10 min break';
+    } else if (phase === 'break') {
+      $('mode').textContent = 'BREAK MODE'; $('timeLabel').textContent = 'TIME TO RESET'; $('next').textContent = 'Next: 90 min focus';
+    } else {
+      $('mode').textContent = 'GOAL COMPLETE'; $('timeLabel').textContent = 'ALL SESSIONS DONE'; $('next').textContent = '10 focus sessions finished';
+    }
+    const completed = phase === 'done' ? TOTAL : (phase === 'break' ? session : session - 1);
+    $('completed').textContent = completed + ' / ' + TOTAL + ' completed';
+    [...$('track').children].forEach((seg, i) => {
+      seg.className = 'segment';
+      if (i < completed) seg.classList.add('done');
+      else if (phase !== 'done' && i === session - 1) seg.classList.add('current');
+    });
+  }
 
-      const $ = (id) => document.getElementById(id);
-      const overlay = $('overlay');
-      const timeEl = $('time');
-      const modeEl = $('mode');
-      const timeLabelEl = $('timeLabel');
-      const sessionEl = $('session');
-      const nextEl = $('next');
-      const completedEl = $('completed');
-      const trackEl = $('track');
-      const startPauseBtn = $('startPause');
-      const soundToggleBtn = $('soundToggle');
-      const soundStateEl = $('soundState');
-      const hintEl = $('hint');
-
-      let phase = 'focus'; // focus | break | done
-      let session = 1;
-      let remaining = FOCUS_SECONDS;
-      let deadline = 0;
-      let running = false;
-      let soundEnabled = true;
-      let audioContext = null;
-      let timerHandle = null;
-
-      function formatTime(seconds) {
-        const safe = Math.max(0, Math.ceil(seconds));
-        const mins = Math.floor(safe / 60);
-        const secs = safe % 60;
-        return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  function transition(now) {
+    if (phase === 'focus') {
+      if (session >= TOTAL) {
+        phase = 'done'; deadline = now; lastCue = 'done'; cue('done');
+        $('status').textContent = '10 FOCUS SESSIONS COMPLETE';
+      } else {
+        phase = 'break'; deadline += BREAK_MS; lastCue = 'break'; cue('break');
+        $('status').textContent = 'BREAK STARTED · NEXT FOCUS BEGINS AUTOMATICALLY';
       }
+    } else if (phase === 'break') {
+      phase = 'focus'; session += 1; deadline += FOCUS_MS; lastCue = 'focus'; cue('focus');
+      $('status').textContent = 'FOCUS SESSION ' + session + ' OF 10';
+    }
+  }
 
-      function completedSessions() {
-        if (phase === 'done') return TOTAL_SESSIONS;
-        return phase === 'break' ? session : session - 1;
-      }
+  function tick() {
+    const now = Date.now();
+    let guard = 0;
+    while (phase !== 'done' && now >= deadline && guard < 30) {
+      transition(deadline);
+      guard++;
+    }
+    render(now);
+  }
 
-      function render() {
-        const left = running ? Math.max(0, Math.ceil((deadline - Date.now()) / 1000)) : remaining;
-        timeEl.textContent = phase === 'done' ? 'DONE' : formatTime(left);
-        sessionEl.textContent = String(Math.min(session, TOTAL_SESSIONS)).padStart(2, '0');
-        overlay.classList.toggle('break', phase === 'break');
-        overlay.classList.toggle('done', phase === 'done');
-
-        if (phase === 'focus') {
-          modeEl.textContent = 'FOCUS MODE';
-          timeLabelEl.textContent = 'TIME TO FOCUS';
-          nextEl.textContent = 'Next: 10 min break';
-        } else if (phase === 'break') {
-          modeEl.textContent = 'BREAK MODE';
-          timeLabelEl.textContent = 'TIME TO RESET';
-          nextEl.textContent = 'Next: 90 min focus';
-        } else {
-          modeEl.textContent = 'GOAL COMPLETE';
-          timeLabelEl.textContent = 'ALL SESSIONS DONE';
-          nextEl.textContent = '10 focus sessions finished';
-        }
-
-        const completed = completedSessions();
-        completedEl.textContent = completed + ' / ' + TOTAL_SESSIONS + ' completed';
-        const segments = trackEl.children;
-        for (let i = 0; i < segments.length; i++) {
-          segments[i].className = 'segment';
-          if (i < completed) segments[i].classList.add('done');
-          else if (phase !== 'done' && i === session - 1) segments[i].classList.add('current');
-        }
-
-        startPauseBtn.textContent = phase === 'done' ? 'COMPLETED' : (running ? 'PAUSE' : (remaining === (phase === 'focus' ? FOCUS_SECONDS : BREAK_SECONDS) ? 'START' : 'RESUME'));
-        startPauseBtn.disabled = phase === 'done';
-        soundToggleBtn.textContent = soundEnabled ? 'SOUND ON' : 'SOUND OFF';
-        soundStateEl.textContent = audioContext && audioContext.state === 'running' ? 'AUDIO READY' : (soundEnabled ? 'AUDIO LOCKED' : 'MUTED');
-      }
-
-      function ensureAudio() {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) {
-          soundStateEl.textContent = 'NO WEB AUDIO';
-          return false;
-        }
-        try {
-          if (!audioContext) audioContext = new AudioCtx();
-          if (audioContext.state === 'suspended') audioContext.resume();
-          return true;
-        } catch (_) {
-          soundStateEl.textContent = 'AUDIO UNAVAILABLE';
-          return false;
-        }
-      }
-
-      function playNotes(notes) {
-        if (!soundEnabled || !ensureAudio()) return;
-        const ctx = audioContext;
-        const base = ctx.currentTime + 0.04;
-        notes.forEach((note, index) => {
-          const startAt = base + index * 0.19;
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(note, startAt);
-          gain.gain.setValueAtTime(0.0001, startAt);
-          gain.gain.exponentialRampToValueAtTime(0.055, startAt + 0.025);
-          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.24);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(startAt);
-          osc.stop(startAt + 0.26);
-        });
-        render();
-      }
-
-      function cueFor(kind) {
-        if (kind === 'break') playNotes([660, 880, 1046]);
-        else if (kind === 'focus') playNotes([880, 660]);
-        else if (kind === 'done') playNotes([523, 659, 784, 988]);
-        else if (kind === 'test') playNotes([784, 988, 1175]);
-      }
-
-      function startOrResume() {
-        if (phase === 'done') return;
-        ensureAudio(); // A user tap is required by many mobile browsers before audio can play.
-        if (running) {
-          remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-          running = false;
-          deadline = 0;
-        } else {
-          running = true;
-          deadline = Date.now() + remaining * 1000;
-          hintEl.textContent = 'Timer running. Keep PRISM open; cues sound at each phase change.';
-        }
-        render();
-      }
-
-      function resetTimer() {
-        running = false;
-        deadline = 0;
-        phase = 'focus';
-        session = 1;
-        remaining = FOCUS_SECONDS;
-        hintEl.textContent = 'Tap START here to begin and unlock audio. Cues play when focus/break changes.';
-        render();
-      }
-
-      function advancePhase() {
-        if (phase === 'focus') {
-          if (session >= TOTAL_SESSIONS) {
-            phase = 'done';
-            remaining = 0;
-            running = false;
-            deadline = 0;
-            cueFor('done');
-            hintEl.textContent = 'Goal complete. Reset to begin a fresh 10-session set.';
-          } else {
-            phase = 'break';
-            remaining = BREAK_SECONDS;
-            deadline = Date.now() + remaining * 1000;
-            cueFor('break');
-            hintEl.textContent = 'Break started. The next focus session begins automatically in 10 minutes.';
-          }
-        } else if (phase === 'break') {
-          phase = 'focus';
-          session += 1;
-          remaining = FOCUS_SECONDS;
-          deadline = Date.now() + remaining * 1000;
-          cueFor('focus');
-          hintEl.textContent = 'Focus session ' + session + ' of 10 started.';
-        }
-        render();
-      }
-
-      function tick() {
-        if (!running) return;
-        const left = Math.ceil((deadline - Date.now()) / 1000);
-        if (left <= 0) advancePhase();
-        else render();
-      }
-
-      startPauseBtn.addEventListener('click', startOrResume);
-      $('reset').addEventListener('click', resetTimer);
-      soundToggleBtn.addEventListener('click', () => {
-        soundEnabled = !soundEnabled;
-        if (soundEnabled) ensureAudio();
-        render();
-      });
-      $('testSound').addEventListener('click', () => {
-        ensureAudio();
-        cueFor('test');
-        hintEl.textContent = 'Test cue sent. Check that you can hear it in your PRISM preview.';
-      });
-      document.addEventListener('visibilitychange', tick);
-      timerHandle = window.setInterval(tick, 1000);
-      render();
-    })();
-  </script>
+  // Auto-start immediately when this webpage is loaded by PRISM.
+  setupAudio();
+  $('status').textContent = (audio && audio.state === 'running')
+    ? 'AUTO-STARTED ON PAGE LOAD · AUDIO READY'
+    : 'AUTO-STARTED ON PAGE LOAD · PRISM MAY BLOCK WEBPAGE AUDIO';
+  if (audio) audio.addEventListener('statechange', () => {
+    if (phase !== 'done') $('status').textContent = audio.state === 'running'
+      ? 'TIMER RUNNING · AUDIO READY'
+      : 'TIMER RUNNING · PRISM MAY BLOCK WEBPAGE AUDIO';
+  });
+  render(Date.now());
+  window.setInterval(tick, 500);
+  document.addEventListener('visibilitychange', tick);
+})();
+</script>
 </body>
 </html>
